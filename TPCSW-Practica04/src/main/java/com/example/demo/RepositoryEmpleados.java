@@ -1,12 +1,9 @@
-
 package com.example.demo;
 
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
 
-/**
- *
- * @author isaias
- */
-public interface RepositoryEmpleados extends CrudRepository<Empleado, Long> {
+@Repository
+public interface RepositoryEmpleados extends JpaRepository<Empleado, Long> {
     
 }

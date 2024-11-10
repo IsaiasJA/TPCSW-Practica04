@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -19,6 +20,7 @@ public class Empleado implements Serializable{
     @GeneratedValue(strategy = GenerationType.SEQUENCE,generator = "empleados2_clave_seq")
     @SequenceGenerator(name = "empleados2_clave_seq", sequenceName = "empleados2_clave_seq",
             initialValue = 1,allocationSize = 1)
+    
     @Column
     private long clave;
     @Column
@@ -30,6 +32,7 @@ public class Empleado implements Serializable{
     
     @ManyToOne
     @JoinColumn(name="depto_clave")
+    @JsonIgnore
     private Departamentos depto;
 
     public Departamentos getDepto() {
@@ -38,10 +41,8 @@ public class Empleado implements Serializable{
 
     public void setDepto(Departamentos depto) {
         this.depto = depto;
-    }
+    } 
     
-    
-
     public long getClave() {
         return clave;
     }
