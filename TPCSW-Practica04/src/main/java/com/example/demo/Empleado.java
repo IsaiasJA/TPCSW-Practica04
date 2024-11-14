@@ -1,6 +1,6 @@
 package com.example.demo;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.io.Serializable;
 import javax.persistence.Entity;
 import javax.persistence.Id;
@@ -32,7 +32,8 @@ public class Empleado implements Serializable{
     
     @ManyToOne
     @JoinColumn(name="depto_clave")
-    @JsonIgnore
+    
+    @JsonIgnoreProperties("empleados") 
     private Departamentos depto;
 
     public Departamentos getDepto() {
