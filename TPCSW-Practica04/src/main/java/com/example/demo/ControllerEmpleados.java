@@ -17,16 +17,19 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/api/empleados")
 public class ControllerEmpleados {
-    
+
     @Autowired
     private RepositoryEmpleados repositoryEmpleados;
-    
+
+    @Autowired
+    private RepositoryDepartamentos repositoryDepartamentos;
+
     @GetMapping
     public ResponseEntity<List<Empleado>> list() {
         List<Empleado> empleados = repositoryEmpleados.findAll();
         return ResponseEntity.ok(empleados);
     }
-    
+
     @GetMapping("/{id}")
     public ResponseEntity<Empleado> get(@PathVariable Long id) {
         Optional<Empleado> res = repositoryEmpleados.findById(id);
@@ -36,26 +39,46 @@ public class ControllerEmpleados {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
-    
+
     @PutMapping("/{id}")
-    public ResponseEntity<?> put(@PathVariable Long id, @RequestBody Empleado input) {
-        Optional<Empleado> existingEmpleado = repositoryEmpleados.findById(id);
-        if (existingEmpleado.isPresent()) {
-            Empleado updatedEmpleado = existingEmpleado.get();
-            updatedEmpleado.setNombre(input.getNombre());
-            repositoryEmpleados.save(updatedEmpleado);
-            return ResponseEntity.ok(updatedEmpleado);
-        } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Empleado no encontrado");
+    public ResponseEntity<Empleado> updateEmpleado(
+            @PathVariable Long id,
+            @RequestBody Empleado empleadoRequest) {
+
+        Empleado empleado = repositoryEmpleados.findById(id).orElse(null);
+        if (empleado == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(null);
         }
+        empleado.setNombre(empleadoRequest.getNombre());
+        empleado.setDireccion(empleadoRequest.getDireccion());
+        empleado.setTelefono(empleadoRequest.getTelefono());
+
+        if (empleadoRequest.getDepto() != null) {
+            Departamentos depto = repositoryDepartamentos.findById(empleadoRequest.getDepto().getClave()).orElse(null);
+            if (depto != null) {
+                empleado.setDepto(depto);
+            }
+        }
+        Empleado actualizado = repositoryEmpleados.save(empleado);
+        return ResponseEntity.ok(actualizado);
     }
-    
+
     @PostMapping
-    public ResponseEntity<Empleado> post(@RequestBody Empleado input) {
-        Empleado newEmpleado = repositoryEmpleados.save(input);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newEmpleado);
+    public ResponseEntity<Empleado> createEmpleado(@RequestBody Empleado empleado) {
+        if (empleado.getDepto() != null && empleado.getDepto().getClave() > 0) {
+            Departamentos deptoExistente = repositoryDepartamentos.findById(empleado.getDepto().getClave())
+                    .orElseThrow(() -> new RuntimeException("Departamento no encontrado"));
+            empleado.setDepto(deptoExistente);
+        } else if (empleado.getDepto() != null) {
+            Departamentos nuevoDepto = repositoryDepartamentos.save(empleado.getDepto());
+            empleado.setDepto(nuevoDepto);
+        }
+
+        Empleado nuevoEmpleado = repositoryEmpleados.save(empleado);
+        return ResponseEntity.status(HttpStatus.CREATED).body(nuevoEmpleado);
     }
-    
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         Optional<Empleado> existingEmpleado = repositoryEmpleados.findById(id);
@@ -63,7 +86,7 @@ public class ControllerEmpleados {
             repositoryEmpleados.delete(existingEmpleado.get());
             return ResponseEntity.ok("Empleado borrado correctamente");
         } else {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Employee not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Empleado no encontrado");
         }
     }
 }

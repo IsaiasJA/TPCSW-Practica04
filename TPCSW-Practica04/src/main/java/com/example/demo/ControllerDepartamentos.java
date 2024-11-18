@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 @RestController
 @RequestMapping("/api/departamentos")
 public class ControllerDepartamentos {
-       
+    
     @Autowired
     private RepositoryDepartamentos repositoryDepartamentos;
     
@@ -37,23 +37,23 @@ public class ControllerDepartamentos {
         }
     }
     
+    @PostMapping
+    public ResponseEntity<Departamentos> post(@RequestBody Departamentos input) {
+        Departamentos newDepartamento = repositoryDepartamentos.save(input);
+        return ResponseEntity.status(HttpStatus.CREATED).body(newDepartamento);
+    }
+    
     @PutMapping("/{id}")
     public ResponseEntity<?> put(@PathVariable Long id, @RequestBody Departamentos input) {
         Optional<Departamentos> existingDepartamento = repositoryDepartamentos.findById(id);
         if (existingDepartamento.isPresent()) {
             Departamentos updatedDepartamento = existingDepartamento.get();
-            updatedDepartamento.setNombre(input.getNombre());
+            updatedDepartamento.setNombre(input.getNombre()); // Aquí puedes añadir otros campos que quieras actualizar
             repositoryDepartamentos.save(updatedDepartamento);
             return ResponseEntity.ok(updatedDepartamento);
         } else {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Departamento no encontrado");
         }
-    }
-    
-    @PostMapping
-    public ResponseEntity<Departamentos> post(@RequestBody Departamentos input) {
-        Departamentos newDepartamento = repositoryDepartamentos.save(input);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newDepartamento);
     }
     
     @DeleteMapping("/{id}")
